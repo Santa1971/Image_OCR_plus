@@ -1,6 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { OCRFile, AnalysisMode, OCREngine } from '../types';
 
+interface StudioTab {
+    id: string;
+    label: string;
+    icon: string;
+    prompt?: string;
+}
+
 interface MainWorkspaceProps {
   currentItem: OCRFile | undefined;
   onGenerate?: (id: string, prompt: string) => void;
@@ -197,20 +204,44 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({ currentItem, onGen
 
   if (!currentItem) {
     return (
-        <main className="flex-1 bg-surface-canvas flex flex-col items-center justify-center p-8 order-2 min-h-[50vh]">
-            <div className="flex flex-col items-center justify-center opacity-40 text-center">
-                <div className="size-24 rounded-full bg-surface border border-border flex items-center justify-center shadow-lg mb-4">
-                    <span className="material-symbols-outlined text-4xl text-text-muted">perm_media</span>
+        <main className="flex-1 flex flex-col items-center justify-center p-8 order-2 min-h-[50vh] relative overflow-hidden bg-transparent">
+            
+            <div className="flex flex-col items-center justify-center text-center z-10 animate-fade-in">
+                {/* Creative 3D Folder Drop Zone */}
+                <div 
+                    className="folder-3d-container mb-10 cursor-pointer group"
+                    onClick={() => document.getElementById('hidden-app-file-input')?.click()}
+                >
+                    <div className="folder-paper"></div>
+                    <div className="folder-back"></div>
+                    <div className="folder-front">
+                        <span className="material-symbols-outlined text-white/60 text-5xl group-hover:text-white transition-colors">add_photo_alternate</span>
+                    </div>
+                    {/* Laser Scanner Effect */}
+                    <div className="scan-line"></div>
                 </div>
-                <h3 className="text-lg font-bold text-text-secondary">분석할 파일을 선택하세요</h3>
-                <p className="text-sm text-text-muted mt-2">이미지, 동영상, 오디오 파일을 지원합니다.</p>
+
+                <h3 className="text-3xl font-extrabold mb-4 drop-shadow-sm tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-200 via-white to-purple-200">
+                    분석할 파일을 드롭 하거나 선택하세요
+                </h3>
+                <p className="text-sm md:text-base text-text-secondary font-medium bg-surface/40 px-6 py-2 rounded-full backdrop-blur-md border border-white/10 mb-8 shadow-sm">
+                    지원: PDF, JPG, PNG, DOCX, TXT / 오디오 / 비디오
+                </p>
+
+                <button 
+                    onClick={() => document.getElementById('hidden-app-file-input')?.click()}
+                    className="px-8 py-3.5 bg-primary hover:bg-primary-hover text-white rounded-xl shadow-lg shadow-primary/30 font-bold transition-all hover:-translate-y-1 hover:shadow-primary/50 active:translate-y-0 flex items-center gap-2"
+                >
+                    <span className="material-symbols-outlined">add_circle</span>
+                    파일 선택하기
+                </button>
             </div>
         </main>
     );
   }
 
-  const getStudioTabs = () => {
-      const common: { id: string; label: string; icon: string; prompt?: string }[] = [
+  const getStudioTabs = (): StudioTab[] => {
+      const common: StudioTab[] = [
           { id: 'chat', label: '자유 대화', icon: 'chat' }
       ];
       if (currentItem.mediaType === 'image') {
@@ -242,18 +273,20 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({ currentItem, onGen
   const renderMediaPlayer = () => {
       if (currentItem.mediaType === 'video') {
           return (
-              <video controls className="max-w-full max-h-full rounded-lg shadow-sm bg-black">
+              <video controls className="max-w-full max-h-full rounded-2xl shadow-lg bg-black/90">
                   <source src={currentItem.previewUrl} type={currentItem.file.type} />
               </video>
           );
       } else if (currentItem.mediaType === 'audio') {
           return (
-              <div className="w-full h-full flex flex-col items-center justify-center bg-surface-subtle rounded-xl p-8 gap-4">
-                  <span className="material-symbols-outlined text-6xl text-primary opacity-50">graphic_eq</span>
-                  <audio controls className="w-full">
+              <div className="w-full h-full flex flex-col items-center justify-center bg-white/50 backdrop-blur-md rounded-2xl p-8 gap-6 border border-white/50 shadow-inner">
+                  <div className="p-6 bg-primary/10 rounded-full">
+                    <span className="material-symbols-outlined text-6xl text-primary">graphic_eq</span>
+                  </div>
+                  <audio controls className="w-full max-w-md shadow-sm rounded-lg">
                       <source src={currentItem.previewUrl} type={currentItem.file.type} />
                   </audio>
-                  <p className="text-sm text-text-muted font-mono">{currentItem.file.name}</p>
+                  <p className="text-sm text-text-secondary font-mono bg-white/60 px-4 py-2 rounded-lg border border-white/60">{currentItem.file.name}</p>
               </div>
           );
       } else {
@@ -264,32 +297,32 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({ currentItem, onGen
 
           return (
             <div className="w-full h-full flex flex-col">
-                 <div className="flex p-1 bg-surface-subtle border border-border rounded-lg mb-2 self-start gap-2 flex-wrap">
-                    <div className="flex p-0.5 bg-surface border border-border rounded-md">
+                 <div className="flex p-1.5 bg-white/60 backdrop-blur-md border border-white/50 rounded-xl mb-3 self-start gap-2 flex-wrap shadow-sm z-10">
+                    <div className="flex p-0.5 bg-gray-100/50 border border-gray-200/50 rounded-lg">
                         <button 
                             onClick={() => setImageTab('original')}
-                            className={`px-3 py-1 text-[10px] font-bold rounded transition-all ${imageTab === 'original' ? 'bg-primary-light text-primary' : 'text-text-muted hover:text-text-secondary'}`}
+                            className={`px-3 py-1.5 text-[11px] font-bold rounded-md transition-all ${imageTab === 'original' ? 'bg-white text-primary shadow-sm' : 'text-text-muted hover:text-text-secondary'}`}
                         >
                             원본
                         </button>
                         <button 
                             onClick={() => setImageTab('ai_layer')}
                             disabled={!currentItem.ocrData || currentItem.ocrData.length === 0}
-                            className={`px-3 py-1 text-[10px] font-bold rounded transition-all flex items-center gap-1 ${imageTab === 'ai_layer' ? 'bg-primary-light text-primary' : 'text-text-muted hover:text-text-secondary disabled:opacity-50'}`}
+                            className={`px-3 py-1.5 text-[11px] font-bold rounded-md transition-all flex items-center gap-1 ${imageTab === 'ai_layer' ? 'bg-white text-primary shadow-sm' : 'text-text-muted hover:text-text-secondary disabled:opacity-50'}`}
                         >
-                            <span className="material-symbols-outlined text-[10px]">layers</span>
+                            <span className="material-symbols-outlined text-[12px]">layers</span>
                             AI 복원
                         </button>
                     </div>
                     {currentItem.mediaType === 'image' && (
-                        <div className="flex items-center gap-1 bg-surface rounded-md border border-border px-2">
-                            <button onClick={() => setScale(s => Math.max(s - 0.1, 0.05))} className="p-1 hover:bg-surface-hover rounded"><span className="material-symbols-outlined text-sm text-text-secondary">remove</span></button>
-                            <span className="text-[10px] w-8 text-center text-text-main">{Math.round(scale * 100)}%</span>
-                            <button onClick={() => setScale(s => Math.min(s + 0.1, 5))} className="p-1 hover:bg-surface-hover rounded"><span className="material-symbols-outlined text-sm text-text-secondary">add</span></button>
+                        <div className="flex items-center gap-1 bg-white/70 rounded-lg border border-white/60 px-2 shadow-sm">
+                            <button onClick={() => setScale(s => Math.max(s - 0.1, 0.05))} className="p-1 hover:bg-gray-100 rounded text-text-secondary"><span className="material-symbols-outlined text-sm">remove</span></button>
+                            <span className="text-[10px] w-8 text-center text-text-main font-bold">{Math.round(scale * 100)}%</span>
+                            <button onClick={() => setScale(s => Math.min(s + 0.1, 5))} className="p-1 hover:bg-gray-100 rounded text-text-secondary"><span className="material-symbols-outlined text-sm">add</span></button>
                             {onEditImage && (
                                 <>
-                                    <div className="w-px h-3 bg-border mx-1"></div>
-                                    <button onClick={() => onEditImage(currentItem.id)} className="p-1 hover:bg-surface-hover rounded text-text-secondary hover:text-primary flex items-center gap-1">
+                                    <div className="w-px h-3 bg-gray-300 mx-1"></div>
+                                    <button onClick={() => onEditImage(currentItem.id)} className="p-1 hover:bg-gray-100 rounded text-text-secondary hover:text-primary flex items-center gap-1">
                                         <span className="material-symbols-outlined text-sm">crop_rotate</span>
                                     </button>
                                 </>
@@ -300,8 +333,13 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({ currentItem, onGen
 
                 <div 
                     ref={workspaceRef}
-                    className="flex-1 w-full flex items-center justify-center cursor-move overflow-hidden bg-surface-subtle rounded-xl border border-border relative group min-h-[300px]"
-                    style={{ touchAction: 'none' }}
+                    className="flex-1 w-full flex items-center justify-center cursor-move overflow-hidden bg-gray-50/50 rounded-2xl border border-white/60 shadow-inner relative group min-h-[300px]"
+                    style={{ 
+                        touchAction: 'none',
+                        backgroundImage: 'radial-gradient(#4f46e5 1px, transparent 1px)', /* Use primary color for dots in dark mode */
+                        backgroundSize: '20px 20px',
+                        backgroundColor: 'rgba(15, 23, 42, 0.5)' /* Dark background */
+                    }}
                     onWheel={handleWheel}
                     onMouseDown={handleMouseDown}
                     onMouseMove={handleMouseMove}
@@ -351,7 +389,7 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({ currentItem, onGen
                                 return (
                                     <div
                                         key={i}
-                                        className="group/box absolute hover:z-50 hover:bg-yellow-50/50 hover:ring-2 ring-yellow-400 transition-all"
+                                        className="group/box absolute hover:z-50 hover:bg-yellow-50/50 hover:ring-2 ring-yellow-400 transition-all rounded-sm"
                                         style={{
                                             left: `${left}%`, top: `${top}%`, width: `${width}%`, height: `${height}%`,
                                             backgroundColor: isLayerMode ? 'transparent' : 'rgba(79, 70, 229, 0.1)',
@@ -383,7 +421,6 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({ currentItem, onGen
   };
 
   const renderUnifiedOcrColumn = () => {
-      // Determine content based on active tab and media type
       let content = "";
       let title = "";
       let isGemini = ocrTab === 'gemini';
@@ -404,32 +441,36 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({ currentItem, onGen
 
       return (
         <div className="flex flex-col h-full min-h-[300px]">
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between mb-2">
                 {/* Tab Switcher */}
-                <div className="flex p-0.5 bg-surface-subtle border border-border rounded-lg">
+                <div className="flex p-1 bg-white/60 backdrop-blur-md border border-white/50 rounded-xl shadow-sm">
                     <button 
                         onClick={() => setOcrTab('gemini')}
-                        className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${ocrTab === 'gemini' ? 'bg-surface shadow-sm text-primary' : 'text-text-muted hover:text-text-secondary'}`}
+                        className={`px-4 py-1.5 text-[11px] font-bold rounded-lg transition-all flex items-center gap-1.5 ${ocrTab === 'gemini' ? 'bg-white shadow-sm text-primary ring-1 ring-black/5' : 'text-text-muted hover:text-text-secondary'}`}
                     >
+                        <span className="material-symbols-outlined text-[14px]">auto_awesome</span>
                         Gemini
                     </button>
                     <button 
                         onClick={() => setOcrTab('tesseract')}
-                        className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${ocrTab === 'tesseract' ? 'bg-surface shadow-sm text-text-main' : 'text-text-muted hover:text-text-secondary'}`}
+                        className={`px-4 py-1.5 text-[11px] font-bold rounded-lg transition-all flex items-center gap-1.5 ${ocrTab === 'tesseract' ? 'bg-white shadow-sm text-text-main ring-1 ring-black/5' : 'text-text-muted hover:text-text-secondary'}`}
                     >
+                        <span className="material-symbols-outlined text-[14px]">text_snippet</span>
                         Tesseract
                     </button>
                 </div>
                 
-                <button onClick={() => copyToClipboard(content)} className="text-text-muted hover:text-primary" title="복사">
+                <button onClick={() => copyToClipboard(content)} className="p-2 text-text-muted hover:text-primary bg-white/50 hover:bg-white rounded-lg transition-all border border-transparent hover:border-white/50" title="복사">
                     <span className="material-symbols-outlined text-sm">content_copy</span>
                 </button>
             </div>
 
-            <div className="flex-1 bg-surface border border-border rounded-xl shadow-sm p-4 overflow-y-auto">
-                 {/* Special Message for Image Mode in Tesseract Tab */}
+            <div className="glass-panel flex-1 rounded-2xl p-5 overflow-y-auto custom-scrollbar">
                  {!isGemini && currentItem.analysisMode === 'image' && currentItem.mediaType === 'image' ? (
-                     <div className="h-full flex items-center justify-center text-text-muted text-xs italic">이미지 분석 모드입니다.<br/>(OCR 비활성화)</div>
+                     <div className="h-full flex flex-col items-center justify-center text-text-muted opacity-60">
+                         <span className="material-symbols-outlined text-3xl mb-2">hide_image</span>
+                         <p className="text-xs italic text-center">이미지 분석 모드입니다.<br/>(OCR 비활성화)</p>
+                     </div>
                  ) : (
                      <p className={`text-xs leading-relaxed whitespace-pre-wrap ${isGemini ? 'text-text-secondary' : 'text-text-secondary font-mono'}`}>
                         {content || (currentItem.status === 'processing' ? '분석 중...' : '데이터 없음')}
@@ -445,17 +486,17 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({ currentItem, onGen
         if (activeStudioTab === 'chat') {
             return (
                 <div className="flex flex-col h-full min-h-[400px]">
-                    <div ref={chatScrollRef} className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 bg-surface-canvas">
+                    <div ref={chatScrollRef} className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
                         {currentItem.chatHistory.length === 0 ? (
                             <div className="h-full flex flex-col items-center justify-center text-text-muted opacity-60">
-                                <span className="material-symbols-outlined text-3xl mb-1">chat_bubble</span>
+                                <span className="material-symbols-outlined text-3xl mb-2">chat_bubble</span>
                                 <p className="text-xs">자유롭게 대화해보세요.</p>
                             </div>
                         ) : (
                             currentItem.chatHistory.map((msg, i) => (
                                 <div key={i} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                                    <div className={`max-w-[90%] px-3 py-2 rounded-xl text-xs leading-relaxed whitespace-pre-wrap ${
-                                        msg.role === 'user' ? 'bg-primary text-white rounded-br-none' : 'bg-surface border border-border text-text-main rounded-bl-none shadow-sm'
+                                    <div className={`max-w-[90%] px-4 py-2.5 rounded-2xl text-xs leading-relaxed whitespace-pre-wrap shadow-sm ${
+                                        msg.role === 'user' ? 'bg-primary text-white rounded-br-none' : 'bg-white border border-white/50 text-text-main rounded-bl-none'
                                     }`}>
                                         {msg.text}
                                     </div>
@@ -463,16 +504,16 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({ currentItem, onGen
                             ))
                         )}
                     </div>
-                    <div className="p-3 bg-surface border-t border-border flex gap-2">
+                    <div className="p-3 bg-white/50 border-t border-white/30 flex gap-2 backdrop-blur-sm">
                         <input 
                             type="text" 
                             value={promptInput}
                             onChange={(e) => setPromptInput(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleGenerateClick()}
                             placeholder="메시지 입력..."
-                            className="flex-1 px-3 py-2 rounded-lg border border-border bg-surface-subtle focus:bg-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-xs text-text-main"
+                            className="flex-1 px-4 py-2.5 rounded-xl border border-white/50 bg-white/80 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none text-xs text-text-main shadow-inner"
                         />
-                        <button onClick={handleGenerateClick} disabled={!promptInput.trim()} className="p-2 bg-primary text-white rounded-lg">
+                        <button onClick={handleGenerateClick} disabled={!promptInput.trim()} className="p-2.5 bg-primary hover:bg-primary-hover text-white rounded-xl shadow-md transition-all disabled:opacity-50">
                             <span className="material-symbols-outlined text-sm">send</span>
                         </button>
                     </div>
@@ -480,21 +521,27 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({ currentItem, onGen
             );
         } else {
             const resultText = currentItem.studioResults?.[activeStudioTab];
-            const { json, note } = activeStudioTab === 'json' && resultText ? extractJson(resultText) : { json: '', note: '' };
+            let json = '';
+            if (activeStudioTab === 'json' && resultText) {
+                json = extractJson(resultText).json;
+            }
 
             return (
                 <div className="flex flex-col h-full p-4 overflow-y-auto min-h-[400px]">
                     {resultText ? (
                         <div className="flex flex-col h-full gap-3">
-                            <div className="flex justify-between items-center">
-                                <h5 className="text-xs font-bold text-text-secondary">결과</h5>
-                                <div className="flex gap-2">
+                            <div className="flex justify-between items-center mb-1">
+                                <h5 className="text-xs font-bold text-text-secondary flex items-center gap-1">
+                                    <span className="material-symbols-outlined text-sm text-primary">auto_awesome</span>
+                                    결과
+                                </h5>
+                                <div className="flex gap-1.5 bg-white/50 p-1 rounded-lg border border-white/50">
                                     <button 
                                         onClick={() => {
                                             const tab = studioTabs.find(t => t.id === activeStudioTab);
                                             if(tab?.prompt) handleStudioTabAction(activeStudioTab, tab.prompt);
                                         }}
-                                        className="text-[10px] px-2 py-1 bg-surface-subtle border border-border rounded hover:bg-surface text-text-main"
+                                        className="p-1.5 hover:bg-white rounded-md text-text-main transition-all"
                                         title="재생성"
                                     >
                                         <span className="material-symbols-outlined text-[14px]">refresh</span>
@@ -505,33 +552,36 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({ currentItem, onGen
                                             activeStudioTab === 'json' && json ? json : resultText,
                                             activeStudioTab === 'json' ? 'json' : 'md'
                                         )}
-                                        className="text-[10px] px-2 py-1 bg-surface-subtle border border-border rounded hover:bg-surface text-text-main flex items-center gap-1"
+                                        className="p-1.5 hover:bg-white rounded-md text-text-main transition-all"
                                         title="다운로드"
                                     >
                                         <span className="material-symbols-outlined text-[14px]">download</span>
                                     </button>
-                                    <button onClick={() => copyToClipboard(activeStudioTab === 'json' && json ? json : resultText)} className="text-[10px] font-bold text-white bg-primary px-3 py-1 rounded">복사</button>
+                                    <button onClick={() => copyToClipboard(activeStudioTab === 'json' && json ? json : resultText)} className="text-[10px] font-bold text-white bg-primary px-3 py-1 rounded-md shadow-sm hover:bg-primary-hover transition-all">복사</button>
                                 </div>
                             </div>
                             {activeStudioTab === 'json' && isJsonViewMode ? (
                                 <div className="flex-1 flex flex-col gap-2 min-h-0">
-                                    <pre className="flex-1 p-3 bg-[#1e1e1e] text-[#d4d4d4] text-[10px] font-mono rounded-lg overflow-auto">{json || "No JSON"}</pre>
+                                    <pre className="flex-1 p-4 bg-[#1e1e1e] text-[#a9b7c6] text-[11px] font-mono rounded-xl overflow-auto shadow-inner border border-gray-700">{json || "No JSON"}</pre>
                                 </div>
                             ) : (
-                                <textarea readOnly className="flex-1 w-full p-4 rounded-xl border border-border bg-surface-subtle text-xs resize-none text-text-main" value={resultText} />
+                                <textarea readOnly className="flex-1 w-full p-4 rounded-xl border border-white/50 bg-white/70 text-xs resize-none text-text-main leading-relaxed shadow-inner outline-none" value={resultText} />
                             )}
                         </div>
                     ) : (
-                        <div className="flex flex-col items-center justify-center h-full text-center opacity-60">
-                            <p className="text-xs text-text-secondary mb-4">'{studioTabs.find(t => t.id === activeStudioTab)?.label}' 생성</p>
+                        <div className="flex flex-col items-center justify-center h-full text-center opacity-70">
+                            <div className="bg-primary/5 p-4 rounded-full mb-3">
+                                <span className="material-symbols-outlined text-3xl text-primary">magic_button</span>
+                            </div>
+                            <p className="text-xs text-text-secondary mb-4 font-medium">'{studioTabs.find(t => t.id === activeStudioTab)?.label}' 콘텐츠를 생성합니다.</p>
                             <button 
                                 onClick={() => {
                                     const tab = studioTabs.find(t => t.id === activeStudioTab);
                                     if(tab?.prompt) handleStudioTabAction(activeStudioTab, tab.prompt);
                                 }}
-                                className="px-4 py-2 bg-primary text-white rounded-lg text-xs font-bold shadow-md"
+                                className="px-6 py-2 bg-primary hover:bg-primary-hover text-white rounded-lg text-xs font-bold shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5"
                             >
-                                시작
+                                생성 시작
                             </button>
                         </div>
                     )}
@@ -541,17 +591,17 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({ currentItem, onGen
     };
 
     return (
-        <div className="flex-1 bg-surface border border-border rounded-xl shadow-sm overflow-hidden flex flex-col relative h-full">
-            <div className="flex flex-col h-full bg-surface-subtle">
-                <div className="flex overflow-x-auto no-scrollbar border-b border-border bg-surface px-2 shrink-0">
+        <div className="glass-panel flex-1 rounded-2xl shadow-lux overflow-hidden flex flex-col relative h-full">
+            <div className="flex flex-col h-full bg-white/30">
+                <div className="flex overflow-x-auto no-scrollbar border-b border-white/40 bg-white/40 px-2 shrink-0 backdrop-blur-sm">
                     {studioTabs.map(tab => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveStudioTab(tab.id)}
-                            className={`flex items-center gap-1.5 px-3 py-3 text-[10px] font-bold border-b-2 transition-all whitespace-nowrap
-                                ${activeStudioTab === tab.id ? 'border-primary text-primary' : 'border-transparent text-text-muted'}`}
+                            className={`flex items-center gap-1.5 px-4 py-3 text-[11px] font-bold border-b-2 transition-all whitespace-nowrap
+                                ${activeStudioTab === tab.id ? 'border-primary text-primary bg-white/50' : 'border-transparent text-text-muted hover:text-text-secondary hover:bg-white/30'}`}
                         >
-                            <span className="material-symbols-outlined text-[14px]">{tab.icon}</span>
+                            <span className="material-symbols-outlined text-[16px]">{tab.icon}</span>
                             {tab.label}
                         </button>
                     ))}
@@ -565,21 +615,21 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({ currentItem, onGen
   };
 
   return (
-    <main className="flex-1 bg-surface-canvas relative flex flex-col overflow-y-auto order-2 h-full">
+    <main className="flex-1 relative flex flex-col overflow-y-auto order-2 h-full">
       {/* Top Bar */}
-      <div className="sticky top-0 z-10 bg-surface/90 backdrop-blur-md border-b border-border px-4 py-2 md:px-6 md:py-3 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-3 overflow-hidden">
-             <div className="bg-primary/10 p-1.5 rounded text-primary">
-                <span className="material-symbols-outlined text-lg">
+      <div className="sticky top-0 z-20 bg-surface/80 backdrop-blur-xl border-b border-white/50 px-4 py-2 md:px-6 md:py-3 flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-4 overflow-hidden">
+             <div className="bg-gradient-to-br from-primary to-primary-hover p-2 rounded-lg text-white shadow-md shadow-primary/20">
+                <span className="material-symbols-outlined text-lg block">
                     {currentItem.mediaType === 'video' ? 'movie' : currentItem.mediaType === 'audio' ? 'graphic_eq' : 'image'}
                 </span>
              </div>
              <div className="flex flex-col">
                 <span className="font-bold text-sm text-text-main truncate max-w-[150px] md:max-w-md">{currentItem.file.name}</span>
-                <span className={`text-[10px] font-bold uppercase ${
+                <span className={`text-[10px] font-bold uppercase tracking-wider ${
                     currentItem.status === 'done' ? 'text-success' : currentItem.status === 'processing' ? 'text-primary' : 'text-text-muted'
                 }`}>
-                    {currentItem.status === 'done' ? '완료' : currentItem.status === 'processing' ? '분석 중' : '대기'}
+                    {currentItem.status === 'done' ? '분석 완료' : currentItem.status === 'processing' ? '분석 진행 중...' : '대기 중'}
                 </span>
              </div>
         </div>
@@ -588,27 +638,29 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({ currentItem, onGen
         <div className="hidden md:flex items-center gap-3">
             <button 
                 onClick={() => setIsSplitView(!isSplitView)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all ${isSplitView ? 'bg-primary text-white border-primary' : 'bg-surface text-text-secondary border-border hover:bg-surface-hover'}`}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm ${isSplitView ? 'bg-primary text-white shadow-primary/20' : 'bg-white text-text-secondary border border-white hover:bg-gray-50'}`}
             >
                 <span className="material-symbols-outlined text-sm">{isSplitView ? 'vertical_split' : 'grid_view'}</span>
-                <span>비교 보기</span>
+                <span>{isSplitView ? '분할 보기' : '그리드 보기'}</span>
             </button>
         </div>
       </div>
 
       {/* --- Mobile View (Tabbed) --- */}
-      <div className="md:hidden flex-1 flex flex-col min-h-0">
-          <div className="flex-1 overflow-y-auto p-4">
+      <div className="md:hidden flex-1 flex flex-col min-h-0 bg-surface-canvas">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {mobileTab === 'media' && renderMediaPlayer()}
               {mobileTab === 'ocr' && renderUnifiedOcrColumn()}
               {mobileTab === 'ai' && (
-                  <div className="flex flex-col h-full bg-success-light/10 p-4 rounded-xl border border-success/20">
-                        <div className="flex items-center justify-between mb-2">
-                            <h5 className="text-xs font-bold text-success uppercase">핵심 요약 / 보정</h5>
+                  <div className="glass-panel p-5 rounded-2xl border border-white/60">
+                        <div className="flex items-center justify-between mb-3 border-b border-gray-200 pb-2">
+                            <h5 className="text-xs font-bold text-success uppercase flex items-center gap-1">
+                                <span className="material-symbols-outlined text-sm">summarize</span> 핵심 요약
+                            </h5>
                             <button onClick={() => copyToClipboard(currentItem.textCorrected || currentItem.summary)} className="text-text-muted hover:text-primary"><span className="material-symbols-outlined text-sm">content_copy</span></button>
                         </div>
                         {currentItem.mediaType === 'image' && currentItem.textCorrected ? (
-                            <div className="text-xs leading-relaxed text-text-main bg-surface p-3 rounded border border-success/10">{renderDiff(currentItem.textGemini, currentItem.textCorrected)}</div>
+                            <div className="text-xs leading-relaxed text-text-main bg-white/50 p-3 rounded-lg border border-white/50">{renderDiff(currentItem.textGemini, currentItem.textCorrected)}</div>
                         ) : (
                             <p className="text-xs leading-relaxed whitespace-pre-wrap text-text-main font-medium">{currentItem.summary || "내용 없음"}</p>
                         )}
@@ -618,7 +670,7 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({ currentItem, onGen
           </div>
           
           {/* Mobile Bottom Navigation */}
-          <div className="bg-surface border-t border-border flex justify-around p-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] sticky bottom-0 z-20 pb-safe">
+          <div className="bg-white/90 backdrop-blur-md border-t border-white/50 flex justify-around p-2 shadow-lg sticky bottom-0 z-20 pb-safe">
               {[
                   { id: 'media', icon: 'perm_media', label: '미디어' },
                   { id: 'ocr', icon: 'text_snippet', label: '데이터' },
@@ -628,10 +680,10 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({ currentItem, onGen
                   <button
                     key={tab.id}
                     onClick={() => setMobileTab(tab.id as any)}
-                    className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-colors min-w-[60px] ${mobileTab === tab.id ? 'text-primary' : 'text-text-muted hover:text-text-secondary'}`}
+                    className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all min-w-[60px] ${mobileTab === tab.id ? 'text-primary bg-primary/5' : 'text-text-muted hover:text-text-secondary'}`}
                   >
                       <span className={`material-symbols-outlined text-2xl ${mobileTab === tab.id ? 'fill-1' : ''}`}>{tab.icon}</span>
-                      <span className="text-[10px] font-medium">{tab.label}</span>
+                      <span className="text-[10px] font-bold">{tab.label}</span>
                   </button>
               ))}
           </div>
@@ -639,18 +691,18 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({ currentItem, onGen
 
       {/* --- Desktop View (Grid) --- */}
       {isSplitView ? (
-        <div className="hidden md:grid flex-1 p-6 grid-cols-2 gap-6 h-full min-h-0">
+        <div className="hidden md:grid flex-1 p-6 grid-cols-2 gap-6 h-full min-h-0 bg-surface-canvas">
             <section className="flex flex-col gap-3 min-w-0 h-full overflow-hidden">
-                <div className="relative w-full flex-1 border border-border rounded-xl overflow-hidden bg-surface-subtle">{renderMediaPlayer()}</div>
+                <div className="relative w-full flex-1 rounded-2xl overflow-hidden glass-panel p-1">{renderMediaPlayer()}</div>
             </section>
             <section className="flex flex-col gap-3 min-w-0 h-full overflow-hidden">
-                <div className="flex-1 bg-surface border border-border rounded-xl shadow-sm p-6 overflow-y-auto">
+                <div className="flex-1 glass-panel rounded-2xl p-6 overflow-y-auto custom-scrollbar">
                     <p className="text-sm leading-7 whitespace-pre-wrap text-text-main">{currentItem.textGemini}</p>
                 </div>
             </section>
         </div>
       ) : (
-        <div className="hidden md:grid flex-1 p-6 grid-cols-2 2xl:grid-cols-3 gap-6 h-full min-h-0">
+        <div className="hidden md:grid flex-1 p-6 grid-cols-2 2xl:grid-cols-3 gap-6 h-full min-h-0 bg-surface-canvas">
             {/* Column 1: Media Player */}
             <section className="flex flex-col gap-3 min-w-0 h-[500px] xl:h-auto">
                 <div className="relative w-full h-full">{renderMediaPlayer()}</div>
@@ -662,17 +714,20 @@ export const MainWorkspace: React.FC<MainWorkspaceProps> = ({ currentItem, onGen
             {/* Column 3: Studio / Basic Analysis */}
             <section className="flex flex-col gap-3 min-w-0 h-[500px] xl:h-auto">
                  {/* Basic/Studio Tabs for Desktop Column */}
-                 <div className="flex items-center justify-between mb-1">
-                    <div className="flex p-0.5 bg-surface-subtle border border-border rounded-lg">
-                        <button onClick={() => setResultTab('basic')} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${resultTab === 'basic' ? 'bg-surface shadow-sm text-text-main' : 'text-text-muted hover:text-text-secondary'}`}>기본 분석</button>
-                        <button onClick={() => setResultTab('studio')} className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${resultTab === 'studio' ? 'bg-primary-light text-primary shadow-sm' : 'text-text-muted hover:text-text-secondary'}`}>AI 창작</button>
+                 <div className="flex items-center justify-between mb-2">
+                    <div className="flex p-1 bg-white/60 backdrop-blur-md border border-white/50 rounded-xl shadow-sm">
+                        <button onClick={() => setResultTab('basic')} className={`px-4 py-1.5 text-[11px] font-bold rounded-lg transition-all ${resultTab === 'basic' ? 'bg-white shadow-sm text-text-main ring-1 ring-black/5' : 'text-text-muted hover:text-text-secondary'}`}>기본 분석</button>
+                        <button onClick={() => setResultTab('studio')} className={`px-4 py-1.5 text-[11px] font-bold rounded-lg transition-all ${resultTab === 'studio' ? 'bg-white shadow-sm text-primary ring-1 ring-black/5' : 'text-text-muted hover:text-text-secondary'}`}>AI 창작</button>
                     </div>
                 </div>
                 {resultTab === 'basic' ? (
-                     <div className="flex-1 bg-surface border border-border rounded-xl shadow-sm p-4 overflow-y-auto bg-success-light/10">
-                        <h5 className="text-xs font-bold text-success uppercase mb-2">{currentItem.mediaType === 'image' ? "AI 보정 비교 / 요약" : "핵심 요약"}</h5>
+                     <div className="glass-panel flex-1 rounded-2xl p-5 overflow-y-auto bg-green-50/30 border-green-100">
+                        <h5 className="text-xs font-bold text-success uppercase mb-3 flex items-center gap-1.5 border-b border-green-200/50 pb-2">
+                            <span className="material-symbols-outlined text-sm">check_circle</span>
+                            {currentItem.mediaType === 'image' ? "AI 보정 비교 / 요약" : "핵심 요약"}
+                        </h5>
                         {currentItem.mediaType === 'image' && currentItem.textCorrected ? (
-                            <div className="text-xs leading-relaxed text-text-main">{renderDiff(currentItem.textGemini, currentItem.textCorrected)}</div>
+                            <div className="text-xs leading-relaxed text-text-main bg-white/60 p-3 rounded-xl border border-white/60 shadow-sm">{renderDiff(currentItem.textGemini, currentItem.textCorrected)}</div>
                         ) : (
                             <p className="text-xs leading-relaxed whitespace-pre-wrap text-text-main font-medium">{currentItem.summary}</p>
                         )}

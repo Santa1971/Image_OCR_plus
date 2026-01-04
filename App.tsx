@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
-import { createWorker, PSM } from 'tesseract.js';
+import { createWorker, PSM, Worker } from 'tesseract.js';
 import { Header } from './components/Header';
 import { LeftSidebar } from './components/LeftSidebar';
 import { MainWorkspace } from './components/MainWorkspace';
@@ -8,6 +8,7 @@ import { RightSidebar } from './components/RightSidebar';
 import { SettingsPage } from './components/SettingsPage';
 import { JsonViewerModal } from './components/JsonViewerModal';
 import { ImageEditorModal } from './components/ImageEditorModal';
+import { LandingPage } from './components/LandingPage';
 import { OCRFile, MediaType, AnalysisMode, OCRBlock, AutoConfig, OCREngine, SystemInstructions, AppTheme } from './types';
 
 // Define prompts centrally to reuse in auto-gen and manual-gen
@@ -42,7 +43,14 @@ const DEFAULT_INSTRUCTIONS: SystemInstructions = {
     video: "영상의 흐름, 주요 장면, 자막 내용을 시간 순서대로 정리하세요. 유튜브 업로드용 제목과 설명도 제안하세요."
 };
 
+const DAILY_QUOTA_LIMIT = 1500; // Gemini Free Tier Assumption for UI
+
+type ViewState = 'landing' | 'workspace' | 'settings';
+
 const App: React.FC = () => {
+  const [currentView, setCurrentView] = useState<ViewState>('landing');
+  const [previousView, setPreviousView] = useState<ViewState>('landing'); // Track navigation history
+  
   const [items, setItems] = useState<OCRFile[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -66,7 +74,8 @@ const App: React.FC = () => {
   const [autoConfig, setAutoConfig] = useState<AutoConfig>(DEFAULT_AUTO_CONFIG);
   const [theme, setTheme] = useState<AppTheme>('default');
   
-  const [currentView, setCurrentView] = useState<'workspace' | 'settings'>('workspace');
+  // API Usage Stats
+  const [apiUsage, setApiUsage] = useState(0);
 
   // Mobile Sidebar States
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(false);
@@ -84,6 +93,9 @@ const App: React.FC = () => {
 
   // Main Upload Input Ref for shortcut
   const mainFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Persistent Tesseract Worker Ref for performance
+  const tesseractWorkerRef = useRef<Worker | null>(null);
 
   useEffect(() => {
     const storedKey = localStorage.getItem('gemini_api_key');
@@ -125,6 +137,26 @@ const App: React.FC = () => {
     if (storedTheme) {
         setTheme(storedTheme as AppTheme);
     }
+
+    // Load API usage from local storage (reset if date changed)
+    const today = new Date().toISOString().slice(0, 10);
+    const storedUsageDate = localStorage.getItem('api_usage_date');
+    const storedUsageCount = localStorage.getItem('api_usage_count');
+
+    if (storedUsageDate === today && storedUsageCount) {
+        setApiUsage(parseInt(storedUsageCount, 10));
+    } else {
+        setApiUsage(0);
+        localStorage.setItem('api_usage_date', today);
+        localStorage.setItem('api_usage_count', '0');
+    }
+
+    // Clean up worker on unmount
+    return () => {
+        if (tesseractWorkerRef.current) {
+            tesseractWorkerRef.current.terminate();
+        }
+    };
   }, []);
 
   // Apply Theme
@@ -135,6 +167,15 @@ const App: React.FC = () => {
         document.documentElement.classList.add(`theme-${theme}`);
     }
   }, [theme]);
+
+  const incrementApiUsage = () => {
+      setApiUsage(prev => {
+          const newValue = prev + 1;
+          localStorage.setItem('api_usage_count', newValue.toString());
+          localStorage.setItem('api_usage_date', new Date().toISOString().slice(0, 10));
+          return newValue;
+      });
+  };
 
   // Keyboard shortcut listener
   useEffect(() => {
@@ -214,6 +255,7 @@ const App: React.FC = () => {
   };
 
   const toggleView = () => {
+      setPreviousView(currentView);
       setCurrentView(prev => prev === 'workspace' ? 'settings' : 'workspace');
   };
 
@@ -351,6 +393,8 @@ const App: React.FC = () => {
             reader.readAsDataURL(item.file);
         });
 
+        incrementApiUsage(); // Track Usage
+
         const ai = new GoogleGenAI({ apiKey: currentApiKey });
         
         let contextInstruction = `당신은 전문 콘텐츠 크리에이터입니다. 
@@ -401,6 +445,8 @@ const App: React.FC = () => {
             reader.onerror = reject;
             reader.readAsDataURL(item.file);
         });
+        
+        incrementApiUsage(); // Track Usage
 
         const ai = new GoogleGenAI({ apiKey });
         let contextInstruction = `당신은 사용자가 제공한 미디어 파일(${item.mediaType})을 분석하고 사용자의 요청에 맞춰 텍스트를 생성하는 AI 어시스턴트입니다. 
@@ -459,35 +505,88 @@ const App: React.FC = () => {
       }
   };
 
-  // Preprocessing function for Tesseract
+  // Improved Preprocessing function for Tesseract (Grayscale + Thresholding + Contrast)
   const preprocessImage = (file: File): Promise<string> => {
     return new Promise((resolve) => {
         const img = new Image();
         img.onload = () => {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-            const scale = 2; 
-            canvas.width = img.width * scale;
-            canvas.height = img.height * scale;
+            
+            // Limit max dimension for speed, but keep high enough for accuracy
+            const MAX_DIM = 2500;
+            let width = img.width;
+            let height = img.height;
+            
+            if (width > height) {
+                if (width > MAX_DIM) {
+                    height = Math.round(height * (MAX_DIM / width));
+                    width = MAX_DIM;
+                }
+            } else {
+                if (height > MAX_DIM) {
+                    width = Math.round(width * (MAX_DIM / height));
+                    height = MAX_DIM;
+                }
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+
             if (ctx) {
                 ctx.fillStyle = "#FFFFFF";
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, width, height);
                 
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 const data = imageData.data;
+                
+                // Advanced Preprocessing Loop
+                // 1. Grayscale
+                // 2. Simple Contrast Stretching
+                // 3. Binarization (Thresholding)
+                
+                const threshold = 160; // Slightly higher threshold for cleaner text
+                
                 for (let i = 0; i < data.length; i += 4) {
+                    // Grayscale
                     const avg = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-                    data[i] = avg;
-                    data[i + 1] = avg;
-                    data[i + 2] = avg;
+                    
+                    // Contrast (Simple linear)
+                    const contrastFactor = 1.2; 
+                    const contrast = (avg - 128) * contrastFactor + 128;
+                    
+                    // Binarization
+                    const bin = contrast >= threshold ? 255 : 0;
+                    
+                    data[i] = bin;
+                    data[i + 1] = bin;
+                    data[i + 2] = bin;
                 }
                 ctx.putImageData(imageData, 0, 0);
             }
-            resolve(canvas.toDataURL('image/png'));
+            resolve(canvas.toDataURL('image/png', 0.8)); // Use JPEG/PNG compression to reduce size slightly
         };
         img.src = URL.createObjectURL(file);
     });
+  };
+
+  // Helper to initialize Tesseract Worker once
+  const getTesseractWorker = async () => {
+      if (tesseractWorkerRef.current) return tesseractWorkerRef.current;
+      
+      const worker = await createWorker('kor+eng', 1, {
+            langPath: 'https://tessdata.projectnaptha.com/4.0.0_best',
+            logger: m => { if(m.status === 'recognizing text') console.debug(m.progress); },
+            errorHandler: err => console.error(err)
+      });
+      await worker.setParameters({
+            tessedit_pageseg_mode: PSM.AUTO,
+            tessedit_ocr_engine_mode: 1, // LSTM
+      });
+      
+      tesseractWorkerRef.current = worker;
+      return worker;
   };
 
   // Function to call external PaddleOCR API
@@ -558,6 +657,8 @@ const App: React.FC = () => {
                 reader.onerror = reject;
                 reader.readAsDataURL(item.file);
             });
+            
+            incrementApiUsage(); // Track Usage
 
             const ai = new GoogleGenAI({ apiKey });
             const analysisModel = model;
@@ -636,7 +737,11 @@ const App: React.FC = () => {
                     },
                     config: {
                         systemInstruction: systemInstruction,
-                        responseMimeType: "application/json", 
+                        responseMimeType: "application/json",
+                        // Increase precision by lowering temperature
+                        temperature: 0.1, 
+                        topP: 0.95,
+                        topK: 40,
                     }
                 });
             } catch (err: any) {
@@ -663,24 +768,21 @@ const App: React.FC = () => {
             const result = { tess: "", paddle: "" };
             
             if (item.mediaType === 'image' && imageOcrEnabled && (item.analysisMode === 'text' || item.analysisMode === 'all')) {
-                // Case 1: Tesseract (Local)
+                // Case 1: Tesseract (Local) - Optimized for speed
                 if (ocrEngine === 'tesseract') {
                     try {
-                        const worker = await createWorker('kor+eng', 1, {
-                            langPath: 'https://tessdata.projectnaptha.com/4.0.0_best',
-                            logger: m => console.debug(m),
-                        });
-                        await worker.setParameters({
-                             tessedit_pageseg_mode: PSM.AUTO,
-                             tessedit_ocr_engine_mode: 1,
-                        });
+                        const worker = await getTesseractWorker();
                         const processedImageUrl = await preprocessImage(item.file);
                         const ret = await worker.recognize(processedImageUrl);
                         result.tess = ret.data.text;
-                        await worker.terminate();
                     } catch (err) { 
                         console.warn("Tesseract Error:", err); 
                         result.tess = "Tesseract 오류: " + err;
+                        // Reset worker in case of error
+                        if(tesseractWorkerRef.current) {
+                            await tesseractWorkerRef.current.terminate();
+                            tesseractWorkerRef.current = null;
+                        }
                     }
                 } 
                 // Case 2: PaddleOCR (API)
@@ -1160,32 +1262,53 @@ const App: React.FC = () => {
   // Calculate finished items count for header
   const finishedCount = items.filter(i => i.status === 'done').length;
 
-  return (
-    <div className="flex flex-col h-full bg-surface-subtle transition-colors duration-300">
-      <Header 
-        onSettingsClick={toggleView}
-        onClear={clearAll}
-        onExport={exportCSV}
-        onStartProcess={startBatchProcess}
-        onStopProcess={handleStopProcess}
-        onImportJSON={handleOpenViewer} 
-        onDownloadWord={handleDownloadWord} 
-        onDownloadMarkdown={handleDownloadMarkdown}
-        isProcessing={isProcessing}
-        hasItems={items.length > 0}
-        hasFinishedItems={items.some(i => i.status === 'done')}
-        filter={filter}
-        setFilter={setFilter}
-        currentView={currentView}
-        
-        onToggleLeftSidebar={() => setLeftSidebarOpen(!leftSidebarOpen)}
-        onToggleRightSidebar={() => setRightSidebarOpen(!rightSidebarOpen)}
+  if (currentView === 'landing') {
+      return (
+        <LandingPage 
+            onEnter={() => setCurrentView('workspace')} 
+            onSettings={() => {
+                setPreviousView('landing');
+                setCurrentView('settings');
+            }}
+        />
+      );
+  }
 
-        progressStats={progressStats}
-        elapsedTime={elapsedTime}
-        totalDuration={totalDuration}
-        finishedCount={finishedCount}
-      />
+  return (
+    <div className="flex flex-col h-full bg-surface-subtle/50 transition-colors duration-300 backdrop-blur-sm">
+      {/* Hide main header if viewing settings from landing page */}
+      {!(currentView === 'settings' && previousView === 'landing') && (
+          <Header 
+            onSettingsClick={() => {
+                setPreviousView('workspace');
+                setCurrentView('settings');
+            }}
+            onLogoClick={() => setCurrentView('landing')}
+            onClear={clearAll}
+            onExport={exportCSV}
+            onStartProcess={startBatchProcess}
+            onStopProcess={handleStopProcess}
+            onImportJSON={handleOpenViewer} 
+            onDownloadWord={handleDownloadWord} 
+            onDownloadMarkdown={handleDownloadMarkdown}
+            isProcessing={isProcessing}
+            hasItems={items.length > 0}
+            hasFinishedItems={items.some(i => i.status === 'done')}
+            filter={filter}
+            setFilter={setFilter}
+            currentView={currentView}
+            
+            onToggleLeftSidebar={() => setLeftSidebarOpen(!leftSidebarOpen)}
+            onToggleRightSidebar={() => setRightSidebarOpen(!rightSidebarOpen)}
+
+            progressStats={progressStats}
+            elapsedTime={elapsedTime}
+            totalDuration={totalDuration}
+            finishedCount={finishedCount}
+            
+            apiUsage={{ used: apiUsage, limit: DAILY_QUOTA_LIMIT }}
+          />
+      )}
       
       {/* Hidden file input for shortcut support */}
       <input 
@@ -1259,7 +1382,7 @@ const App: React.FC = () => {
                     currentImageOcrEnabled={imageOcrEnabled}
                     currentTheme={theme}
                     onSave={handleSaveSettings}
-                    onBack={() => setCurrentView('workspace')}
+                    onBack={() => setCurrentView(previousView)}
                 />
             </div>
         )}

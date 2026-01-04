@@ -40,19 +40,19 @@ export const PromptBuilderModal: React.FC<PromptBuilderModalProps> = ({ isOpen, 
 
   if (!isOpen) return null;
 
-  const generatedPrompt = `[Role]
+  const generatedPrompt = `[역할]
 ${formData.role}
 
-[Task]
+[작업]
 ${formData.task}
 
-[Context]
+[문맥]
 ${formData.context}
 
-[Output Format]
+[출력 형식]
 ${formData.format}
 
-[Constraints]
+[제약 사항]
 ${formData.constraints}
 
 위 지침을 바탕으로 미디어를 분석하고 결과를 생성하세요.`;

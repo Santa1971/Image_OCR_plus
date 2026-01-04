@@ -16,73 +16,73 @@ interface SettingsPageProps {
 }
 
 const DEFAULT_INSTRUCTIONS: SystemInstructions = {
-    ocr: "[Role]\n전문 데이터 입력 담당자\n\n[Task]\n이미지 내 텍스트를 보이는 그대로 정확하게 추출하십시오. 오타나 깨진 글자는 문맥을 파악하여 보정하고, 문단과 표 형식을 유지하세요.\n\n[Output]\nJSON 형식 (extractedText, correctedText 포함)",
-    image: "[Role]\n시각 예술 비평가 및 마케팅 카피라이터\n\n[Task]\n이미지의 구도, 조명, 색감, 피사체의 표정과 분위기를 상세히 묘사하고, 시각장애인을 위한 대체 텍스트(Alt Text) 수준으로 정보를 제공하세요.",
-    audio: "[Role]\n전문 속기사 및 회의록 작성자\n\n[Task]\n오디오 내용을 빠짐없이 전사(Full Verbatim)하고, 화자를 구분하여 대화 흐름을 정리하세요. 핵심 안건과 결정 사항을 요약하세요.",
-    video: "[Role]\n영상 콘텐츠 분석가\n\n[Task]\n영상의 타임라인별 주요 사건을 정리하고, 시각적 흐름과 내레이션을 통합하여 분석하세요. 유튜브 업로드용 제목과 설명도 제안하세요."
+    ocr: "[역할]\n전문 데이터 입력 담당자\n\n[작업]\n이미지 내 텍스트를 보이는 그대로 정확하게 추출하십시오. 오타나 깨진 글자는 문맥을 파악하여 보정하고, 문단과 표 형식을 유지하세요.\n\n[출력 형식]\nJSON 형식 (extractedText, correctedText 포함)",
+    image: "[역할]\n시각 예술 비평가 및 마케팅 카피라이터\n\n[작업]\n이미지의 구도, 조명, 색감, 피사체의 표정과 분위기를 상세히 묘사하고, 시각장애인을 위한 대체 텍스트(Alt Text) 수준으로 정보를 제공하세요.",
+    audio: "[역할]\n전문 속기사 및 회의록 작성자\n\n[작업]\n오디오 내용을 빠짐없이 전사(Full Verbatim)하고, 화자를 구분하여 대화 흐름을 정리하세요. 핵심 안건과 결정 사항을 요약하세요.",
+    video: "[역할]\n영상 콘텐츠 분석가\n\n[작업]\n영상의 타임라인별 주요 사건을 정리하고, 시각적 흐름과 내레이션을 통합하여 분석하세요. 유튜브 업로드용 제목과 설명도 제안하세요."
 };
 
 const PRESETS: Record<keyof SystemInstructions, { label: string, text: string }[]> = {
     ocr: [
         { 
             label: "공문서 정밀 분석", 
-            text: "[Role]\n행정 문서 처리 전문가\n\n[Task]\n공문서의 수신, 발신, 문서번호, 날짜, 본문 내용을 구조화하여 추출하세요.\n\n[Context]\n이 데이터는 회사의 전자결재 시스템에 자동 등록됩니다.\n\n[Constraints]\n없는 내용을 지어내지 말고, 직인이나 서명 유무도 확인하세요." 
+            text: "[역할]\n행정 문서 처리 전문가\n\n[작업]\n공문서의 수신, 발신, 문서번호, 날짜, 본문 내용을 구조화하여 추출하세요.\n\n[문맥]\n이 데이터는 회사의 전자결재 시스템에 자동 등록됩니다.\n\n[제약 사항]\n없는 내용을 지어내지 말고, 직인이나 서명 유무도 확인하세요." 
         },
         { 
             label: "영수증/재무 데이터", 
-            text: "[Role]\n회계 감사관\n\n[Task]\n영수증의 상호명, 사업자번호, 거래일시, 품목별 단가 및 총액을 추출하세요.\n\n[Output Format]\nJSON 형식으로 금액은 숫자형(Number)으로 변환하여 제공하세요." 
+            text: "[역할]\n회계 감사관\n\n[작업]\n영수증의 상호명, 사업자번호, 거래일시, 품목별 단가 및 총액을 추출하세요.\n\n[출력 형식]\nJSON 형식으로 금액은 숫자형(Number)으로 변환하여 제공하세요." 
         },
         { 
             label: "손글씨 메모 복원", 
-            text: "[Role]\n고문서 복원 전문가\n\n[Task]\n흘림체나 악필로 작성된 손글씨 메모를 해독하여 디지털 텍스트로 변환하세요.\n\n[Constraints]\n판독이 불가능한 글자는 [판독불가]로 표기하고, 문맥상 가장 적절한 단어를 추론하여 괄호 안에 병기하세요." 
+            text: "[역할]\n고문서 복원 전문가\n\n[작업]\n흘림체나 악필로 작성된 손글씨 메모를 해독하여 디지털 텍스트로 변환하세요.\n\n[제약 사항]\n판독이 불가능한 글자는 [판독불가]로 표기하고, 문맥상 가장 적절한 단어를 추론하여 괄호 안에 병기하세요." 
         }
     ],
     image: [
         { 
             label: "인스타그램 감성 분석", 
-            text: "[Role]\n소셜 미디어 인플루언서\n\n[Task]\n이 사진의 분위기와 감성을 분석하고, 인스타그램에 올릴 때 반응이 좋을 만한 감성적인 캡션과 해시태그 15개를 생성하세요." 
+            text: "[역할]\n소셜 미디어 인플루언서\n\n[작업]\n이 사진의 분위기와 감성을 분석하고, 인스타그램에 올릴 때 반응이 좋을 만한 감성적인 캡션과 해시태그 15개를 생성하세요." 
         },
         { 
             label: "상품 상세 페이지용", 
-            text: "[Role]\n이커머스 MD\n\n[Task]\n상품 이미지의 재질, 디자인 특징, 사용 용도, 장점을 분석하여 쇼핑몰 상세 페이지에 들어갈 소구 포인트(Selling Point)를 작성하세요." 
+            text: "[역할]\n이커머스 MD\n\n[작업]\n상품 이미지의 재질, 디자인 특징, 사용 용도, 장점을 분석하여 쇼핑몰 상세 페이지에 들어갈 소구 포인트(Selling Point)를 작성하세요." 
         },
         { 
             label: "뉴스 보도용 팩트", 
-            text: "[Role]\n사진기자\n\n[Task]\n사진 속 상황을 육하원칙(누가, 언제, 어디서, 무엇을, 어떻게, 왜)에 입각하여 객관적인 사실 위주로 설명하세요. 주관적인 감정 표현은 배제하세요." 
+            text: "[역할]\n사진기자\n\n[작업]\n사진 속 상황을 육하원칙(누가, 언제, 어디서, 무엇을, 어떻게, 왜)에 입각하여 객관적인 사실 위주로 설명하세요. 주관적인 감정 표현은 배제하세요." 
         }
     ],
     audio: [
         { 
             label: "회의록 (Action Item 중심)", 
-            text: "[Role]\n프로젝트 매니저\n\n[Task]\n회의 내용을 요약하고, 누가 언제까지 무엇을 해야 하는지 'Action Item'을 명확히 추출하여 표 형식으로 정리하세요." 
+            text: "[역할]\n프로젝트 매니저\n\n[작업]\n회의 내용을 요약하고, 누가 언제까지 무엇을 해야 하는지 'Action Item'을 명확히 추출하여 표 형식으로 정리하세요." 
         },
         { 
             label: "강의 요약 및 노트", 
-            text: "[Role]\n우등생\n\n[Task]\n강의 내용을 핵심 개념 위주로 요약하고, 복습하기 좋은 구조화된 필기 노트(Bullet points) 형식으로 정리하세요." 
+            text: "[역할]\n우등생\n\n[작업]\n강의 내용을 핵심 개념 위주로 요약하고, 복습하기 좋은 구조화된 필기 노트(Bullet points) 형식으로 정리하세요." 
         },
         { 
             label: "고객 상담 분석", 
-            text: "[Role]\nCS 품질 관리자\n\n[Task]\n고객의 불만 사항과 요구 사항을 정확히 파악하고, 상담원의 응대 태도와 해결 과정을 분석하여 개선점을 제안하세요." 
+            text: "[역할]\nCS 품질 관리자\n\n[작업]\n고객의 불만 사항과 요구 사항을 정확히 파악하고, 상담원의 응대 태도와 해결 과정을 분석하여 개선점을 제안하세요." 
         }
     ],
     video: [
         { 
             label: "유튜브 챕터/타임스탬프", 
-            text: "[Role]\n유튜브 채널 관리자\n\n[Task]\n영상의 내용을 분석하여 시청자가 보기 편하도록 주요 주제가 바뀌는 지점마다 타임스탬프와 소제목(챕터)을 생성하세요." 
+            text: "[역할]\n유튜브 채널 관리자\n\n[작업]\n영상의 내용을 분석하여 시청자가 보기 편하도록 주요 주제가 바뀌는 지점마다 타임스탬프와 소제목(챕터)을 생성하세요." 
         },
         { 
             label: "숏폼(Shorts) 기획", 
-            text: "[Role]\n바이럴 마케터\n\n[Task]\n이 긴 영상에서 가장 도파민을 자극하거나 화제가 될 만한 1분 미만의 하이라이트 구간을 3군데 선정하고, 숏폼 제목을 지어주세요." 
+            text: "[역할]\n바이럴 마케터\n\n[작업]\n이 긴 영상에서 가장 도파민을 자극하거나 화제가 될 만한 1분 미만의 하이라이트 구간을 3군데 선정하고, 숏폼 제목을 지어주세요." 
         }
     ]
 };
 
 const THEMES: { id: AppTheme, name: string, color: string, bg: string }[] = [
-    { id: 'default', name: 'Default', color: '#4f46e5', bg: '#ffffff' },
-    { id: 'midnight', name: 'Midnight', color: '#8b5cf6', bg: '#1e293b' },
-    { id: 'nature', name: 'Nature', color: '#059669', bg: '#f5f5f4' },
-    { id: 'ocean', name: 'Ocean', color: '#0284c7', bg: '#f0f9ff' },
-    { id: 'sunset', name: 'Sunset', color: '#f43f5e', bg: '#fffbeb' },
+    { id: 'default', name: 'Dark Indigo', color: '#4f46e5', bg: '#1e293b' },
+    { id: 'midnight', name: 'Midnight', color: '#8b5cf6', bg: '#020617' },
+    { id: 'nature', name: 'Nature', color: '#059669', bg: '#14532d' },
+    { id: 'ocean', name: 'Ocean', color: '#0284c7', bg: '#0c4a6e' },
+    { id: 'sunset', name: 'Sunset', color: '#f43f5e', bg: '#881337' },
 ];
 
 type SettingsTab = 'general' | 'automation' | 'instructions' | 'data';
@@ -257,7 +257,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   const handleDownloadSampleCSV = () => {
       // 3-column format for simple user creation
       const header = "category,label,content\n";
-      const sampleRow = `"ocr","영수증 처리","[Role] 회계 담당자\n[Task] 영수증의 날짜, 금액, 상호명을 추출하세요."\n"image","SNS 마케팅","[Role] 마케터\n[Task] 인스타그램 감성으로 작성하세요."`;
+      const sampleRow = `"ocr","영수증 처리","[역할] 회계 담당자\n[작업] 영수증의 날짜, 금액, 상호명을 추출하세요."\n"image","SNS 마케팅","[역할] 마케터\n[작업] 인스타그램 감성으로 작성하세요."`;
       
       const bom = "\uFEFF";
       const blob = new Blob([bom + header + sampleRow], { type: 'text/csv;charset=utf-8;' });

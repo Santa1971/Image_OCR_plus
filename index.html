@@ -1,11 +1,10 @@
-
 <!DOCTYPE html>
-<html lang="ko" class="antialiased">
+<html lang="ko" class="antialiased dark">
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>AI OCR 프로 - 차세대 문서 분석</title>
-    <!-- Modern Fonts: Plus Jakarta Sans for UI, JetBrains Mono for Code -->
+    <title>AI OCR 프로</title>
+    <!-- Modern Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
@@ -17,35 +16,36 @@
                 extend: {
                     colors: {
                         surface: {
-                            DEFAULT: "rgb(var(--surface-default) / <alpha-value>)",
-                            subtle: "rgb(var(--surface-subtle) / <alpha-value>)",
-                            canvas: "rgb(var(--surface-canvas) / <alpha-value>)",
-                            hover: "rgb(var(--surface-hover) / <alpha-value>)",
+                            DEFAULT: "rgba(30, 41, 59, 0.7)", /* Slate 800 with opacity */
+                            subtle: "rgba(15, 23, 42, 0.6)",   /* Slate 900 with opacity */
+                            canvas: "transparent",
+                            hover: "rgba(51, 65, 85, 0.8)",    /* Slate 700 with opacity */
+                            glass: "rgba(15, 23, 42, 0.4)",
                         },
                         border: {
-                            DEFAULT: "rgb(var(--border-default) / <alpha-value>)",
-                            active: "rgb(var(--border-active) / <alpha-value>)"
+                            DEFAULT: "rgba(255, 255, 255, 0.1)",
+                            active: "rgba(129, 140, 248, 0.5)"
                         },
                         primary: {
-                            DEFAULT: "rgb(var(--primary-default) / <alpha-value>)",
-                            hover: "rgb(var(--primary-hover) / <alpha-value>)",
-                            light: "rgb(var(--primary-light) / <alpha-value>)",
-                            text: "rgb(var(--primary-text) / <alpha-value>)"
+                            DEFAULT: "#6366f1", /* Indigo 500 */
+                            hover: "#818cf8",   /* Indigo 400 */
+                            light: "rgba(99, 102, 241, 0.15)",
+                            text: "#e0e7ff"     /* Indigo 100 */
                         },
                         text: {
-                            main: "rgb(var(--text-main) / <alpha-value>)",
-                            secondary: "rgb(var(--text-secondary) / <alpha-value>)",
-                            muted: "rgb(var(--text-muted) / <alpha-value>)"
+                            main: "#f8fafc",      /* Slate 50 */
+                            secondary: "#cbd5e1", /* Slate 300 */
+                            muted: "#64748b"      /* Slate 500 */
                         },
                         success: {
                             DEFAULT: "#10b981",
-                            light: "#d1fae5",
-                            text: "#065f46"
+                            light: "rgba(16, 185, 129, 0.15)",
+                            text: "#34d399"
                         },
                         error: {
                             DEFAULT: "#ef4444",
-                            light: "#fee2e2",
-                            text: "#991b1b"
+                            light: "rgba(239, 68, 68, 0.15)",
+                            text: "#f87171"
                         }
                     },
                     fontFamily: {
@@ -53,23 +53,35 @@
                         mono: '"JetBrains Mono", monospace'
                     },
                     boxShadow: {
-                        'lux': '0 4px 24px -1px rgba(0, 0, 0, 0.05), 0 2px 8px -1px rgba(0, 0, 0, 0.02)',
-                        'floating': '0 20px 40px -4px rgba(0, 0, 0, 0.08), 0 8px 16px -4px rgba(0, 0, 0, 0.04)',
-                        'glow': '0 0 15px rgba(var(--primary-default), 0.3)'
+                        'lux': '0 20px 50px -12px rgba(0, 0, 0, 0.5)',
+                        'floating': '0 10px 30px -5px rgba(0, 0, 0, 0.3)',
+                        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.3)',
+                        'glow': '0 0 25px rgba(99, 102, 241, 0.4)',
                     },
                     animation: {
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'fade-in': 'fadeIn 0.4s ease-out',
-                        'slide-in': 'slideIn 0.3s ease-out',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'fade-in': 'fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
+                        'slide-up': 'slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
+                        'float': 'float 6s ease-in-out infinite',
+                        'aurora': 'aurora 25s linear infinite',
                     },
                     keyframes: {
                         fadeIn: {
-                            '0%': { opacity: '0', transform: 'translateY(5px)' },
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
                             '100%': { opacity: '1', transform: 'translateY(0)' },
                         },
-                        slideIn: {
-                            '0%': { opacity: '0', transform: 'translateX(20px)' },
-                            '100%': { opacity: '1', transform: 'translateX(0)' },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-15px)' },
+                        },
+                        aurora: {
+                            '0%': { backgroundPosition: '0% 50%' },
+                            '50%': { backgroundPosition: '100% 50%' },
+                            '100%': { backgroundPosition: '0% 50%' },
                         }
                     }
                 }
@@ -77,176 +89,171 @@
         };
     </script>
     <style>
-        /* CSS Variables for Theming - Improved Contrast */
-        :root {
-            /* Default Theme (Modern Indigo) */
-            --surface-default: 255 255 255;
-            --surface-subtle: 241 245 249; /* Slate 100 - Darker for better contrast */
-            --surface-canvas: 226 232 240; /* Slate 200 */
-            --surface-hover: 243 244 246;
-            
-            --border-default: 203 213 225; /* Slate 300 - Stronger border */
-            --border-active: 148 163 184; /* Slate 400 */
-            
-            --primary-default: 79 70 229; /* Indigo 600 */
-            --primary-hover: 67 56 202; /* Indigo 700 */
-            --primary-light: 224 231 255; /* Indigo 100 */
-            --primary-text: 49 46 129; /* Indigo 900 */
-            
-            --text-main: 15 23 42; /* Slate 900 */
-            --text-secondary: 51 65 85; /* Slate 700 */
-            --text-muted: 100 116 139; /* Slate 500 */
+        /* Base Reset */
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow: hidden;
+            background-color: #020617; /* Slate 950 */
+            color: #f8fafc;
         }
 
-        /* Midnight Theme (Dark/High Contrast) */
-        html.theme-midnight {
-            --surface-default: 30 41 59; /* Slate 800 - Lighter than background for cards */
-            --surface-subtle: 15 23 42; /* Slate 900 - Dark Background */
-            --surface-canvas: 2 6 23; /* Slate 950 - Darkest */
-            --surface-hover: 51 65 85; /* Slate 700 */
-            
-            --border-default: 71 85 105; /* Slate 600 */
-            --border-active: 100 116 139; /* Slate 500 */
-            
-            --primary-default: 139 92 246; /* Violet 500 */
-            --primary-hover: 124 58 237; /* Violet 600 */
-            --primary-light: 46 16 101; /* Violet 950 (BG) */
-            --primary-text: 221 214 254; /* Violet 200 */
-            
-            --text-main: 248 250 252; /* Slate 50 */
-            --text-secondary: 226 232 240; /* Slate 200 */
-            --text-muted: 148 163 184; /* Slate 400 */
+        /* Material Symbols Outlined CSS */
+        .material-symbols-outlined {
+          font-family: 'Material Symbols Outlined';
+          font-weight: normal;
+          font-style: normal;
+          font-size: 24px;
+          line-height: 1;
+          letter-spacing: normal;
+          text-transform: none;
+          display: inline-block;
+          white-space: nowrap;
+          word-wrap: normal;
+          direction: ltr;
+          -webkit-font-feature-settings: 'liga';
+          -webkit-font-smoothing: antialiased;
         }
 
-        /* Nature Theme (Green/Calm - High Contrast) */
-        html.theme-nature {
-            --surface-default: 255 255 255;
-            --surface-subtle: 245 245 244; /* Stone 100 */
-            --surface-canvas: 231 229 228; /* Stone 200 */
-            --surface-hover: 231 229 228; 
-            
-            --border-default: 168 162 158; /* Stone 400 */
-            --border-active: 120 113 108; /* Stone 500 */
-            
-            --primary-default: 5 150 105; /* Emerald 600 */
-            --primary-hover: 4 120 87; /* Emerald 700 */
-            --primary-light: 209 250 229; /* Emerald 100 */
-            --primary-text: 6 78 59; /* Emerald 900 */
-            
-            --text-main: 28 25 23; /* Stone 900 */
-            --text-secondary: 68 64 60; /* Stone 700 */
-            --text-muted: 87 83 78; /* Stone 600 */
+        /* --- Dynamic Aurora Background (Dark Mode) --- */
+        .aurora-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.25) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(168, 85, 247, 0.2) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.2) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(236, 72, 153, 0.15) 0px, transparent 50%);
+            background-size: 150% 150%;
+            animation: aurora 20s ease infinite alternate;
+            filter: blur(50px);
         }
 
-        /* Ocean Theme (Blue/Corporate - High Contrast) */
-        html.theme-ocean {
-            --surface-default: 255 255 255;
-            --surface-subtle: 240 249 255; /* Sky 50 */
-            --surface-canvas: 224 242 254; /* Sky 100 */
-            --surface-hover: 224 242 254;
-            
-            --border-default: 125 211 252; /* Sky 300 */
-            --border-active: 56 189 248; /* Sky 400 */
-            
-            --primary-default: 2 132 199; /* Sky 600 */
-            --primary-hover: 3 105 161; /* Sky 700 */
-            --primary-light: 224 242 254; /* Sky 100 */
-            --primary-text: 12 74 110; /* Sky 900 */
-            
-            --text-main: 15 23 42; /* Slate 900 */
-            --text-secondary: 30 41 59; /* Slate 800 */
-            --text-muted: 71 85 105; /* Slate 600 */
+        /* Glassmorphism Classes (Dark) */
+        .glass {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .glass-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.6));
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
         }
 
-        /* Sunset Theme (Warm/Creative - High Contrast) */
-        html.theme-sunset {
-            --surface-default: 255 255 255;
-            --surface-subtle: 255 251 235; /* Amber 50 */
-            --surface-canvas: 254 243 199; /* Amber 100 */
-            --surface-hover: 253 230 138;
-            
-            --border-default: 252 211 77; /* Amber 300 */
-            --border-active: 245 158 11; /* Amber 500 */
-            
-            --primary-default: 225 29 72; /* Rose 600 */
-            --primary-hover: 190 18 60; /* Rose 700 */
-            --primary-light: 255 228 230; /* Rose 100 */
-            --primary-text: 136 19 55; /* Rose 900 */
-            
-            --text-main: 66 32 6; /* Amber 950 */
-            --text-secondary: 120 53 15; /* Amber 900 */
-            --text-muted: 146 64 14; /* Amber 800 */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
         }
 
+        /* Custom Scrollbar (Dark) */
         ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+            width: 5px;
+            height: 5px;
         }
         ::-webkit-scrollbar-track {
             background: transparent;
         }
         ::-webkit-scrollbar-thumb {
-            background: rgba(var(--border-active), 0.6); 
-            border-radius: 4px;
-            border: 2px solid transparent;
-            background-clip: content-box;
+            background: rgba(255, 255, 255, 0.2); 
+            border-radius: 10px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: rgba(var(--text-muted), 0.8); 
-            border: 2px solid transparent;
-            background-clip: content-box;
+            background: rgba(255, 255, 255, 0.4); 
         }
         
-        input[type=range] {
-            -webkit-appearance: none; 
-            background: transparent; 
+        /* 3D Folder Icon CSS - Enhanced */
+        .folder-3d-container {
+            perspective: 1000px;
+            width: 140px;
+            height: 110px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.3s ease;
         }
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 16px;
-            width: 16px;
-            border-radius: 50%;
-            background: rgb(var(--primary-default));
-            margin-top: -6px;
-            cursor: pointer;
-            box-shadow: 0 0 0 2px rgb(var(--surface-default)), 0 2px 4px rgba(0,0,0,0.1);
-            transition: transform 0.1s;
+        .folder-3d-container:hover {
+            transform: scale(1.05) rotateY(10deg);
         }
-        input[type=range]::-webkit-slider-runnable-track {
+        .folder-back {
+            position: absolute;
             width: 100%;
-            height: 4px;
-            cursor: pointer;
-            background: rgb(var(--border-default));
-            border-radius: 2px;
+            height: 100%;
+            background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+            border-radius: 16px;
+            top: 0;
+            left: 0;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         }
-        details > summary {
-            list-style: none;
+        .folder-front {
+            position: absolute;
+            width: 100%;
+            height: 85%;
+            bottom: 0;
+            left: 0;
+            background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+            border-radius: 0 0 16px 16px;
+            transform-origin: bottom;
+            transform: rotateX(12deg) translateZ(10px);
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.3);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        details > summary::-webkit-details-marker {
-            display: none;
+        .folder-3d-container:hover .folder-front {
+            transform: rotateX(25deg) translateZ(10px);
+        }
+        .folder-paper {
+            position: absolute;
+            width: 85%;
+            height: 90%;
+            background: rgba(255, 255, 255, 0.9);
+            top: -15%;
+            left: 7.5%;
+            border-radius: 6px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transform: rotate(-3deg);
+            opacity: 0.95;
+            transition: top 0.3s ease;
+        }
+        .folder-3d-container:hover .folder-paper {
+            top: -25%;
         }
         
-        /* Print Styles */
-        @media print {
-            body {
-                background: white;
-                height: auto;
-                overflow: visible !important;
-                color: black;
-            }
-            body * { visibility: hidden; }
-            #print-area, #print-area * { visibility: visible; }
-            #root { display: block !important; visibility: visible !important; }
-            #print-area {
-                position: absolute !important;
-                left: 0; top: 0; width: 100% !important;
-                margin: 0 !important; padding: 0 !important;
-                background: white !important;
-                box-shadow: none !important; border: none !important;
-            }
-            @page { size: A4; margin: 20mm; }
-            button, input, textarea, header, aside, .no-print { display: none !important; }
+        /* Scanner Effect */
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: rgba(99, 102, 241, 0.8);
+            box-shadow: 0 0 15px 4px rgba(99, 102, 241, 0.6);
+            top: 0;
+            left: 0;
+            opacity: 0;
+            z-index: 10;
         }
+        .folder-3d-container:hover .scan-line {
+            animation: scan 1.5s linear infinite;
+            opacity: 1;
+        }
+        @keyframes scan {
+            0% { top: 0; opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+
     </style>
 <script type="importmap">
 {
@@ -263,8 +270,10 @@
 </script>
 <link rel="stylesheet" href="/index.css">
 </head>
-<body class="bg-surface-subtle font-display text-text-main h-screen overflow-hidden flex flex-col selection:bg-primary-light selection:text-primary-text transition-colors duration-300">
-    <div id="root" class="flex flex-col h-full w-full"></div>
+<body class="font-display text-text-main h-screen overflow-hidden flex flex-col selection:bg-primary selection:text-white transition-colors duration-300">
+    <!-- Global Aurora Background -->
+    <div class="aurora-bg"></div>
+    <div id="root" class="flex flex-col h-full w-full z-10 relative"></div>
 <script type="module" src="/index.tsx"></script>
 </body>
 </html>
